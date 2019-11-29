@@ -1,0 +1,41 @@
+#!/usr/bin/with-contenv bash
+
+cat > /etc/nginx/conf.d/default.conf <<EOL
+
+server {
+    listen      80;
+    server_name  _;
+
+    absolute_redirect off;
+    
+    location / {
+        log_not_found off;
+        deny all;
+    }
+
+    location = ${BASE_URL:-/aria2} {
+        return 301 \$scheme://\$http_host${BASE_URL:-/aria2}/;
+    }
+    
+    location ${BASE_URL:-/aria2}/ {
+        alias  /${WEBUI:-ariang}/;
+        index  index.php index.html index.htm;
+    }
+
+    location ${BASE_URL:-/aria2}/jsonrpc {
+        proxy_pass http://127.0.0.1:6800/jsonrpc;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection \$http_connection;
+        proxy_read_timeout 86400;
+    }
+}
+
+EOL
+
+mkdir -p /run/nginx
+
+chown -R abc:abc \
+    /run/nginx \
+    /ariang \
+    /webui-aria2

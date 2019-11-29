@@ -1,0 +1,22 @@
+#!/usr/bin/with-contenv bash
+
+mkdir -p \
+    /config \
+    /download
+
+if [[ ! -f /config/aria2.conf ]]; then
+    echo "** using template aria2.conf"
+    cp /defaults/aria2.conf /config/aria2.conf
+else
+    echo "** using existing aria2.conf"
+fi
+
+chown -R abc:abc \
+    /config \
+    /download
+
+# update aria2
+apk add -U -q --no-cache aria2
+
+# version info
+echo "** $(echo $(aria2c -v) | awk '{print $1,$2,$3}') ready!"
