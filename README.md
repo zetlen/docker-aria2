@@ -56,6 +56,7 @@ You can specify your rpc secret and additional command line arguments compaitibl
 |---|---|
 | webui | ```http://${DOCKER_HOST_IP}:${SERVICE_PORT}/aria2``` |
 | jsonrpc | ```http://${DOCKER_HOST_IP}:${SERVICE_PORT}/aria2/jsonrpc``` |
+| xmlrpc | ```http://${DOCKER_HOST_IP}:${SERVICE_PORT}/aria2/xmlrpc``` |
 
 
 ## Environment variables
