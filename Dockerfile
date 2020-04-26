@@ -22,7 +22,7 @@ RUN \
  echo "**** install nginx ****" && \
  apk add --no-cache nginx && \
  echo "**** cleanup ****" && \
- apk del --purge build-deps && \
+ apk del --no-cache --purge build-deps && \
  rm -rf \
  	/tmp/* \
 	/root/.cache
