@@ -3,9 +3,10 @@ LABEL maintainer "wiserain"
 
 # install packages
 RUN \
+ echo "**** install basics ****" && \
+ apk add --no-cache curl && \
  echo "**** install build dependencies ****" && \
  apk add --no-cache --virtual=build-deps \
- 	curl \
 	git \
 	unzip && \
  echo "**** install aria2 ****" && \
@@ -30,9 +31,13 @@ RUN \
 # add local files
 COPY root/ /
 
+RUN chmod a+x /healthcheck.sh
+
 EXPOSE 80
 
 VOLUME /config /download
 WORKDIR /config
+
+HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 CMD [ "/healthcheck.sh" ]
 
 ENTRYPOINT ["/init"]
