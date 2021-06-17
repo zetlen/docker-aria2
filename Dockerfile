@@ -1,4 +1,4 @@
-FROM ghcr.io/linuxserver/baseimage-alpine:3.13
+FROM ghcr.io/linuxserver/baseimage-alpine:3.14
 LABEL maintainer="wiserain"
 LABEL org.opencontainers.image.source https://github.com/wiserain/docker-aria2
 
