@@ -5,7 +5,6 @@ This docker image is with
 - lsiobase/alpine:latest
     - permission handling with ```PUID``` and ```PGID```
     - running an app with non-root user
-- auto-update aria2 (simply restart your container to update)
 - a choice of web-ui
     - [mayswind/AriaNg](https://github.com/mayswind/AriaNg)
     - [ziahamza/webui-aria2](https://github.com/ziahamza/webui-aria2)

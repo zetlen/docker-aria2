@@ -15,8 +15,5 @@ chown -R abc:abc \
     /config \
     /download
 
-# update aria2
-apk add -U -q --no-cache aria2
-
 # version info
 echo "** $(echo $(aria2c -v) | awk '{print $1,$2,$3}') ready!"
