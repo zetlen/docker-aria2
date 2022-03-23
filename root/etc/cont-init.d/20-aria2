@@ -1,14 +1,10 @@
 #!/usr/bin/with-contenv bash
 
-mkdir -p \
-    /config \
-    /download
-
-if [[ ! -f /config/aria2.conf ]]; then
-    echo "** using template aria2.conf"
+if [ ! -f /config/aria2.conf ]; then
+    echo "*** using template aria2.conf"
     cp /defaults/aria2.conf /config/aria2.conf
 else
-    echo "** using existing aria2.conf"
+    echo "*** using existing aria2.conf"
 fi
 
 chown -R abc:abc \
@@ -16,4 +12,4 @@ chown -R abc:abc \
     /download
 
 # version info
-echo "** $(echo $(aria2c -v) | awk '{print $1,$2,$3}') ready!"
+echo "*** aria2 v$(echo $(aria2c -v) | awk '{print $3}') ready!"

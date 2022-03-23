@@ -1,19 +1,14 @@
-#!/bin/bash
+#!/usr/bin/with-contenv bash
 
-if [[ -z "${RPC_SECRET}" ]]; then
-    curl --silent --fail -X POST 127.0.0.1/aria2/jsonrpc \
-        -H 'Content-Type: application/json' \
-        -d '{"jsonrpc":"2.0", "id":"qwer", "method":"aria2.getVersion"}' -o /dev/null
-    if [[ "$?" == "0" ]]; then
-        exit 0
-    fi
+if [ -z "${RPC_SECRET}" ]; then
+    JSON_DATA='{"jsonrpc":"2.0", "id":"qwer", "method":"aria2.getVersion"}'
 else
-    curl --silent --fail -X POST 127.0.0.1/aria2/jsonrpc \
-        -H 'Content-Type: application/json' \
-        -d '{"jsonrpc":"2.0", "id":"qwer", "method":"aria2.getVersion", "params":["token:'${RPC_SECRET}'"]}' -o /dev/null
-    if [[ "$?" == "0" ]]; then
-        exit 0
-    fi
+    JSON_DATA='{"jsonrpc":"2.0", "id":"qwer", "method":"aria2.getVersion", "params":["token:'${RPC_SECRET}'"]}'
 fi
 
-exit 1
+curl -fsX POST 127.0.0.1/aria2/jsonrpc \
+    -H "Content-Type: application/json" \
+    -d "${JSON_DATA}" \
+    -o /dev/null || exit 1
+
+exit 0
