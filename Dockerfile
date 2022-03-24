@@ -35,8 +35,8 @@ COPY root/ /bar/
 # RELEASE
 # 
 FROM base
-LABEL maintainer="wiserain"
-LABEL org.opencontainers.image.source https://github.com/wiserain/docker-aria2
+LABEL maintainer="by275"
+LABEL org.opencontainers.image.source https://github.com/by275/docker-aria2
 
 COPY --from=builder /bar/ /
 

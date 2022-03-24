@@ -9,8 +9,7 @@ on:
   pull_request:
 
 env:
-  DOCKERHUB_USER: wiserain
-  IMAGE_NAME: wiserain/aria2
+  IMAGE_NAME: ghcr.io/by275/aria2
 
 jobs:
   buildx:
@@ -49,14 +48,8 @@ jobs:
           echo "APP_VER=$VER" >> $GITHUB_ENV
           echo ::set-output name=github_desc::$(curl -sX GET https://api.github.com/repos/${GITHUB_REPOSITORY} | jq -r .description)
       -
-        name: Login to docker.io
-        uses: docker/login-action@v1 
-        with:
-          username: ${{ env.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
-      -
         name: Login to ghcr.io
-        uses: docker/login-action@v1 
+        uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -70,18 +63,8 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ env.APP_VER }}
-            ghcr.io/${{ env.IMAGE_NAME }}:latest
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.APP_VER }}
           platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
-      -
-        name: Update Dockerhub description
-        uses: peter-evans/dockerhub-description@v3
-        with:
-          username: ${{ env.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
-          repository: ${{ env.IMAGE_NAME }}
-          short-description: ${{ steps.vars.outputs.github_desc }}
       -
         name: Notification
         uses: sarisia/actions-status-discord@v1
@@ -92,8 +75,6 @@ jobs:
           description: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ env.APP_VER }}
-            ghcr.io/${{ env.IMAGE_NAME }}:latest
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.APP_VER }}
 
   buildx-on-pr:
     runs-on: ubuntu-20.04
@@ -117,14 +98,8 @@ jobs:
           tags: ${{ env.IMAGE_NAME }}:testing
           platforms: linux/amd64,linux/arm/v7,linux/arm64
       - 
-        name: Login to docker.io
-        uses: docker/login-action@v1 
-        with:
-          username: ${{ env.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
-      -
         name: Login to ghcr.io
-        uses: docker/login-action@v1 
+        uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -138,8 +113,6 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:testing
             ${{ env.IMAGE_NAME }}:testing-${{ github.event.pull_request.number }}
-            ghcr.io/${{ env.IMAGE_NAME }}:testing
-            ghcr.io/${{ env.IMAGE_NAME }}:testing-${{ github.event.pull_request.number }}
           platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
       -
@@ -152,5 +125,3 @@ jobs:
           description: |
             ${{ env.IMAGE_NAME }}:testing
             ${{ env.IMAGE_NAME }}:testing-${{ github.event.pull_request.number }}
-            ghcr.io/${{ env.IMAGE_NAME }}:testing
-            ghcr.io/${{ env.IMAGE_NAME }}:testing-${{ github.event.pull_request.number }}

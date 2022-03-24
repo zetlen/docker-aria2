@@ -17,7 +17,7 @@ version: '3'
 
 services:
     container_name: aria2
-    image: wiserain/aria2:latest
+    image: ghcr.io/by275/aria2:latest
     restart: always
     network_mode: "bridge"
     ports:

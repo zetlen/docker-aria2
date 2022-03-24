@@ -7,7 +7,7 @@ server {
     server_name  _;
 
     absolute_redirect off;
-    
+
     location / {
         log_not_found off;
         deny all;
@@ -16,7 +16,7 @@ server {
     location = ${BASE_URL:-/aria2} {
         return 301 \$scheme://\$http_host${BASE_URL:-/aria2}/;
     }
-    
+
     location ${BASE_URL:-/aria2}/ {
         alias  /${WEBUI:-ariang}/;
         index  index.php index.html index.htm;
