@@ -2,7 +2,7 @@
 
 This docker image is with
 
-- lsiobase/alpine:latest
+- s6-overlay v3
     - permission handling with ```PUID``` and ```PGID```
     - running an app with non-root user
 - a choice of web-ui
