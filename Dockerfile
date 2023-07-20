@@ -1,41 +1,80 @@
-ARG ALPINE_VER=3.17
+FROM ubuntu:latest
 
-FROM ghcr.io/by275/base:alpine AS prebuilt
-FROM ghcr.io/by275/base:alpine${ALPINE_VER} AS base
+ARG S6_OVERLAY_VERSION=v3.1.5.0
+ARG ARIA2_VERSION=1.36.0
 
-# 
-# BUILD
-# 
-FROM base AS ariang
+ARG OVERLAY_URL_BASE="https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}"
+ARG ARIA2_URL_BASE="https://github.com/P3TERX/Aria2-Pro-Core/releases/download/${ARIA2_VERSION}}"
+
+RUN echo "== Downloading s6 overlay ==" && \
+    mkdir -p /s6 && \
+    if [ "$TARGETARCH" = "arm64" ]; then \
+        OVERLAY_ARCH=aarch64 ; \
+    elif [ "$TARGETARCH" = "arm" ]; then \
+        OVERLAY_ARCH=armhf ; \
+    elif [ "$TARGETARCH" = "amd64" ]; then \
+        OVERLAY_ARCH="x86_64" ; \
+    else echo "unknown architecture '${TARGETARCH}'" ; exit 1 ; fi && \
+    curl -sL "${OVERLAY_URL_BASE}/s6-overlay-noarch.tar.xz" | tar Jxpf - -C /s6 && \
+    curl -sL "${OVERLAY_URL_BASE}/s6-overlay-${OVERLAY_ARCH}.tar.xz" | tar Jxpf - -C /s6 && \
+    curl -sL "${OVERLAY_URL_BASE}/s6-overlay-symlinks-noarch.tar.xz" | tar Jxpf - -C /s6 && \
+    curl -sL "${OVERLAY_URL_BASE}/s6-overlay-symlinks-arch.tar.xz" | tar Jxpf - -C /s6 && \
+    echo "== Installing Aria2 (Patched PRO binary)" && \
+    mkdir -p /ariatmp && \
+    if [ "$TARGETARCH" = "arm" ]; then \
+        ARIA2_ARCH=armhf ; \
+    else ARIA2_ARCH=$OVERLAY_ARCH; \
+    curl -sL \
+        "${ARIA2_URL_BASE}/aria2-${ARIA2_VERSION}-static-linux-${ARIA_ARCH}.tar.gz" | tar Jxpf - -C /usr/local/bin/
+
+
+
+RUN echo "== Installing Aria2-Pro-Core =="
+ADD https://github.com/P3TERX/Aria2-Pro-Core/releases/download/[version]/aria2-[version]-static-linux-[arch].tar.gz /tmp
+RUN \
+    echo "blorp" \
+    && wget https://github.com/P3TERX/Aria2-Pro-Core/releases/download/[version]/aria2-[version]-static-linux-[arch].tar.gz
+
 
 RUN \
-    echo "**** install ariang ****" && \
-    apk add --no-cache jq && \
-    ARIANG_VER=$(curl -sL https://api.github.com/repos/mayswind/AriaNg/releases/latest | jq -r '.tag_name') && \
-    curl -LJ https://github.com/mayswind/AriaNg/releases/download/${ARIANG_VER}/AriaNg-${ARIANG_VER}.zip -o ariang.zip && \
-    unzip ariang.zip -d /ariang
+    apk add --no-cache \
+        curl \
+        xz
 
-FROM base AS webui-aria2
+
+
+ENV \
+    PS1="$(whoami)@$(hostname):$(pwd)\\$ " \
+    S6_CMD_WAIT_FOR_SERVICES_MAXTIME=0
+
+RUN \
+    echo "**** install core packages ****" && \
+    apk add --no-cache \
+        bash \
+        ca-certificates \
+        coreutils \
+        curl \
+        procps \
+        shadow \
+        tzdata \
+        && \
+    echo "**** create abc user and make empty dirs ****" && \
+    groupmod -g 1000 users && \
+    useradd -u 911 -U -d /config -s /bin/false abc && \
+    usermod -G users abc && \
+    mkdir -p \
+        /config \
+        /defaults \
+        && \
+    echo "**** cleanup ****" && \
+    rm -rf \
+        /tmp/*
 
 RUN \
     echo "**** install webui-aria2 ****" && \
     apk add --no-cache git && \
     git clone https://github.com/ziahamza/webui-aria2.git
 
-# 
-# COLLECT
-# 
-FROM base AS collector
-
-# add s6-overlay
-COPY --from=prebuilt /s6/ /bar/
-ADD https://raw.githubusercontent.com/by275/docker-base/main/_/etc/cont-init.d/adduser /bar/etc/cont-init.d/10-adduser
-
-# add ariang
-COPY --from=ariang /ariang /bar/ariang
-
-# add webui-aria2
-COPY --from=webui-aria2 /webui-aria2/docs /bar/webui-aria2
 
 # add local files
 COPY root/ /bar/
@@ -61,23 +100,6 @@ RUN \
     echo "**** s6: deploy services ****" && \
     rm /bar/package/admin/s6-overlay/etc/s6-rc/sources/top/contents.d/legacy-services && \
     touch /bar/package/admin/s6-overlay/etc/s6-rc/sources/top/contents.d/app
-
-# 
-# RELEASE
-# 
-FROM base
-LABEL maintainer="by275"
-LABEL org.opencontainers.image.source https://github.com/by275/docker-aria2
-
-RUN \
-    echo "**** install runtime packages ****" && \
-    apk add --no-cache aria2 nginx
-
-COPY --from=collector /bar/ /
-
-EXPOSE 80
-
-VOLUME /config /download
 
 HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 \
     CMD /usr/local/bin/healthcheck

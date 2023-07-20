@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  aria2:
+    container_name: aria2
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    restart: always
+    network_mode: "bridge"
+    ports:
+      - ${SERVICE_PORT}:80
+    volumes:
+      - ${DOCKER_ROOT}/aria2/config:/config
+      - ${DOWNLOAD_ROOT}:/download
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      WEBUI: webui-aria2
+      RPC_SECRET: ${RPC_SECRET}
